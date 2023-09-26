@@ -272,6 +272,102 @@ name: principles
 - A single script that shows the sequence of steps taken is the equivalent to "showing your work"
 
 ---
+# How to write scripts
+
+## Keep them modular
+- Each script should do one thing and one thing only
+- e.g. It takes an input in, it returns an output
+
+    - Taking in a raw file and returning a cleaned version
+    - Taking in two files and merging them
+    - Taking in a cleaned file and returning a figure
+
+## Have a main script that runs all scripts in order
+
+- This is the script that you run to reproduce your results
+- You will rarely run it all at once, but it will be a nice way to organize your thoughts
+- This is a further benefit of a well-organized directory -- you can easily see what scripts you need to run in what order
+- Use `source('rscript.R')` to run an external script
+
+---
+# Main script
+
+```{r main_script, eval=FALSE}
+#File: main.R
+#By: Kyle Coombs
+#What: Runs the project from start to finish in Python
+#Date: 2023/09/12
+
+#Install packages with housekeeping. Also put together paths.
+source('housekeeping.R')
+#User written functions can be sourced -- or you could write a package, your call
+source(paste0(build,'clean_functions.R'))
+source(paste0(analysis,'analysis_functions.R'))
+
+#Import files
+df1 <- read_csv(paste0(raw,'file1.csv'))
+df2 <- read_parquet(paste0(raw,'file2.parquet'))
+df3 <- read_dta(paste0(raw,'file3.dta'))
+
+#Clean files
+cleaned_df1  <- clean_df1(df1)
+cleaned_df2  <- clean_df2(df2)
+cleaned_df3  <- cf.clean_df3(df3)
+
+#Merge files 1 to 2
+merged_df1_df2 = merge(cleaned_df1, cleaned_df2, on=c('merge','vars'))
+
+#Append file 1 to
+append_df1_df2_df3 = rbind(merged_df1_df2, cleaned_df2)
+
+#Analysis
+sum_stats=summary_stats(append_df1_df2_df3,stats=c('mean','median','max'))
+reg_results=basic_regression(append_df1_df2_df3)
+
+#Tables will likely be made with a host of R packages
+make_sum_figures(sum_stats)
+make_figures(reg_results)
+make_sum_tables(sum_stats)
+make_tables(reg_results)
+```
+
+---
+# Alternate main script
+```{r main_script2, eval=FALSE}
+#File: main.R
+#By: Kyle Coombs
+#What: Runs the project from start to finish in Python
+#Date: 2023/09/12
+
+#Install packages with housekeeping. Also put together paths.
+source('housekeeping.R')
+#User written functions can be sourced -- or you could write a package, your call
+source(paste0(build,'clean_functions.R'))
+source(paste0(analysis,'analysis_functions.R'))
+
+#Import files
+source(paste0(build,'import_census.R'))
+source(paste0(build,'import_admin_data.R'))
+
+#Clean files
+source(paste0(build,'clean_census.R'))
+source(paste0(build,'clean_admin_data.R'))
+
+#Merge files 1 to 2
+source(paste0(build,'merge_census_admin.R'))
+
+#Analysis
+source('analysis/summary_stats.R')
+source('analysis/basic_regression.R')
+
+#Tables will likely be made with a host of R packages
+source('analysis/make_sum_figures.R')
+source('analysis/make_reg_figures.R')
+source('analysis/make_sum_tables.R')
+source('analysis/make_reg_tables.R')
+```
+
+---
 
 # Version control
 
@@ -444,102 +540,6 @@ here('data/raw','my_data.csv')
 ```
 
 - Can be less clunky than `paste()` and `sep="/"`
-
----
-# How to write scripts
-
-## Keep them modular
-- Each script should do one thing and one thing only
-- e.g. It takes an input in, it returns an output
-
-    - Taking in a raw file and returning a cleaned version
-    - Taking in two files and merging them
-    - Taking in a cleaned file and returning a figure
-
-## Have a main script that runs all scripts in order
-
-- This is the script that you run to reproduce your results
-- You will rarely run it all at once, but it will be a nice way to organize your thoughts
-- This is a further benefit of a well-organized directory -- you can easily see what scripts you need to run in what order
-- Use `source('rscript.R')` to run an external script
-
----
-# Main script
-
-```{r main_script, eval=FALSE}
-#File: main.R
-#By: Kyle Coombs
-#What: Runs the project from start to finish in Python
-#Date: 2023/09/12
-
-#Install packages with housekeeping. Also put together paths.
-source('housekeeping.R')
-#User written functions can be sourced -- or you could write a package, your call
-source(paste0(build,'clean_functions.R'))
-source(paste0(analysis,'analysis_functions.R'))
-
-#Import files
-df1 <- read_csv(paste0(raw,'file1.csv'))
-df2 <- read_parquet(paste0(raw,'file2.parquet'))
-df3 <- read_dta(paste0(raw,'file3.dta'))
-
-#Clean files
-cleaned_df1  <- clean_df1(df1)
-cleaned_df2  <- clean_df2(df2)
-cleaned_df3  <- cf.clean_df3(df3)
-
-#Merge files 1 to 2
-merged_df1_df2 = merge(cleaned_df1, cleaned_df2, on=c('merge','vars'))
-
-#Append file 1 to
-append_df1_df2_df3 = rbind(merged_df1_df2, cleaned_df2)
-
-#Analysis
-sum_stats=summary_stats(append_df1_df2_df3,stats=c('mean','median','max'))
-reg_results=basic_regression(append_df1_df2_df3)
-
-#Tables will likely be made with a host of R packages
-make_sum_figures(sum_stats)
-make_figures(reg_results)
-make_sum_tables(sum_stats)
-make_tables(reg_results)
-```
-
----
-# Alternate main script
-```{r main_script2, eval=FALSE}
-#File: main.R
-#By: Kyle Coombs
-#What: Runs the project from start to finish in Python
-#Date: 2023/09/12
-
-#Install packages with housekeeping. Also put together paths.
-source('housekeeping.R')
-#User written functions can be sourced -- or you could write a package, your call
-source(paste0(build,'clean_functions.R'))
-source(paste0(analysis,'analysis_functions.R'))
-
-#Import files
-source(paste0(build,'import_census.R'))
-source(paste0(build,'import_admin_data.R'))
-
-#Clean files
-source(paste0(build,'clean_census.R'))
-source(paste0(build,'clean_admin_data.R'))
-
-#Merge files 1 to 2
-source(paste0(build,'merge_census_admin.R'))
-
-#Analysis
-source('analysis/summary_stats.R')
-source('analysis/basic_regression.R')
-
-#Tables will likely be made with a host of R packages
-source('analysis/make_sum_figures.R')
-source('analysis/make_reg_figures.R')
-source('analysis/make_sum_tables.R')
-source('analysis/make_reg_tables.R')
-```
 
 ---
 
@@ -1057,7 +1057,7 @@ stopifnot(y)
 ```
 
 ---
-# Troubleshooting tip: 
+# Troubleshooting tips
 
 - Sometimes you've made several changes to your code and suddenly it stops running
     - Was it the new `if` statement?
@@ -1149,6 +1149,37 @@ ggplot(data = df, x = Sepal.Length, y = Sepal.Width) +
 - You can use [reprex](https://reprex.tidyverse.org/) to make sure that your code is reproducible by others.
 
 - You can use [dput](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/dput) to make sure that your data is reproducible by others.
+
+---
+# Troubleshooting tips (cont.)
+
+- Check for superfluous stuff you can remove
+  - e.g. Wait, I don't need to include absolute file paths, I can use relative paths
+  - Bonus: I'll make fewer typos!
+
+- Try small fixes, then apply broadly
+  - e.g. I think the problem is with how I wrote my file paths, let me try to get just one file path to work
+
+- Change one thing at a time
+  - e.g. The problem is either with my `paste0()` statement or the `ggsave` function, let me try to get the `paste0()` statement to work first
+
+---
+# Troubleshooting tips (cont.)
+
+- Embrace GitHub committing
+  - When you have code that works, stage, commit and push it -- even if it is only a small piece of the puzzle
+  - If it breaks, [revert](https://docs.github.com/en/desktop/managing-commits/reverting-a-commit-in-github-desktop)
+  - This minimizes how much you need to re-do/keep track of
+
+- Sometimes it is easier to change things on yourside than it is to force a programming language to work a certain way
+  - e.g. Rmarkdown doesn't like the character `#` in filepaths, but I can change the filepaths rather than trying to force Rmarkdown to accept it
+
+- There's more than one way to skin a cat
+  - e.g. If I can't get `read.csv()` to work, I'll try `read.table()`
+  - e.g. This `googlesheets4` package doesn't seem to work -- what about `gsheet` or `googledrive`?
+
+- With ChatGPT, make very specific asks
+  - e.g. "How do I get a file named `/my/path/name/my_file.pdf` into `other/folder/name/file.Rmd`?"
 
 ---
 
